@@ -1,6 +1,6 @@
 import Foundation
 
-private var taskRequestKey = 0
+private let taskRequestKey = UncheckedSendableBox(value: 0)
 
 /// `Session` manages tasks for HTTP/HTTPS requests.
 open class Session {
@@ -118,10 +118,10 @@ open class Session {
     }
 
     private func setRequest<Request: APIKit.Request>(_ request: Request, forTask task: SessionTask) {
-        objc_setAssociatedObject(task, &taskRequestKey, request, .OBJC_ASSOCIATION_RETAIN_NONATOMIC)
+        objc_setAssociatedObject(task, &taskRequestKey.value, request, .OBJC_ASSOCIATION_RETAIN_NONATOMIC)
     }
 
     private func requestForTask<Request: APIKit.Request>(_ task: SessionTask) -> Request? {
-        return objc_getAssociatedObject(task, &taskRequestKey) as? Request
+        return objc_getAssociatedObject(task, &taskRequestKey.value) as? Request
     }
 }
