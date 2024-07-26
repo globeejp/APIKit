@@ -1,4 +1,5 @@
 import Foundation
+import UniformTypeIdentifiers
 
 #if os(iOS) || os(watchOS) || os(tvOS)
     import MobileCoreServices
@@ -111,9 +112,8 @@ public extension MultipartFormDataBodyParameters {
                 throw Error.cannotGetFileSize(fileURL)
             }
 
-            let detectedMimeType = UTTypeCreatePreferredIdentifierForTag(kUTTagClassFilenameExtension, fileURL.pathExtension as CFString, nil)
-                .map { $0.takeRetainedValue() }
-                .flatMap { UTTypeCopyPreferredTagWithClass($0, kUTTagClassMIMEType)?.takeRetainedValue() }
+            let detectedMimeType = UTType(filenameExtension: fileURL.pathExtension)
+                .flatMap { $0.preferredMIMEType }
                 .map { $0 as String }
 
             self.inputStream = inputStream
