@@ -19,15 +19,15 @@ open class Session {
     }
 
     // Shared session for class methods
-    private static let privateShared: Session = {
+    private static let privateShared: UncheckedSendableBox<Session> = {
         let configuration = URLSessionConfiguration.default
         let adapter = URLSessionAdapter(configuration: configuration)
-        return Session(adapter: adapter)
+        return UncheckedSendableBox(value: Session(adapter: adapter))
     }()
 
     /// The shared `Session` instance for class methods, `Session.send(_:handler:)` and `Session.cancelRequests(with:passingTest:)`.
     open class var shared: Session {
-        return privateShared
+        return privateShared.value
     }
 
     /// Calls `send(_:callbackQueue:handler:)` of `Session.shared`.
@@ -64,10 +64,11 @@ open class Session {
     /// - parameter requestType: The request type to cancel.
     /// - parameter test: The test closure that determines if a request should be cancelled or not.
     open func cancelRequests<Request: APIKit.Request>(with requestType: Request.Type, passingTest test: @escaping @Sendable (Request) -> Bool = { _ in true }) {
-        adapter.getTasks { [weak self] tasks in
+        let selfBox = UncheckedSendableWeakBox<Session>(value: self)
+        adapter.getTasks { tasks in
             tasks
                 .filter { task in
-                    if let request = self?.requestForTask(task) as Request? {
+                    if let request = selfBox.value?.requestForTask(task) as Request? {
                         return test(request)
                     } else {
                         return false
@@ -90,25 +91,25 @@ open class Session {
         }
 
         let task = adapter.createTask(with: urlRequest) { data, urlResponse, error in
-            let result: Result<Request.Response, SessionTaskError>
+            let result: UncheckedSendableBox<Result<Request.Response, SessionTaskError>>
 
             switch (data, urlResponse, error) {
             case (_, _, let error?):
-                result = .failure(.connectionError(error))
+                result = .init(value: .failure(.connectionError(error)))
 
             case (let data?, let urlResponse as HTTPURLResponse, _):
                 do {
-                    result = .success(try request.parse(data: data as Data, urlResponse: urlResponse))
+                    result = .init(value: .success(try request.parse(data: data as Data, urlResponse: urlResponse)))
                 } catch {
-                    result = .failure(.responseError(error))
+                    result = .init(value: .failure(.responseError(error)))
                 }
 
             default:
-                result = .failure(.responseError(ResponseError.nonHTTPURLResponse(urlResponse)))
+                result = .init(value:  .failure(.responseError(ResponseError.nonHTTPURLResponse(urlResponse))))
             }
 
             callbackQueue.execute {
-                handler(result)
+                handler(result.value)
             }
         }
 
