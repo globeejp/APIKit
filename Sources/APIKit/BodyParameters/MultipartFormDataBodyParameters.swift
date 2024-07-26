@@ -61,7 +61,7 @@ public extension MultipartFormDataBodyParameters {
     /// Part represents single part of multipart/form-data.
     struct Part {
         public enum Error: Swift.Error {
-            case illegalValue(Any)
+            case illegalValue(ErrorObject<Any>)
             case illegalFileURL(URL)
             case cannotGetFileSize(URL)
         }
@@ -77,7 +77,7 @@ public extension MultipartFormDataBodyParameters {
         /// If `mimeType` or `fileName` are `nil`, the fields will be omitted.
         public init(value: Any, name: String, mimeType: String? = nil, fileName: String? = nil, encoding: String.Encoding = .utf8) throws {
             guard let data = String(describing: value).data(using: encoding) else {
-                throw Error.illegalValue(value)
+                throw Error.illegalValue(.init(value: value))
             }
 
             self.inputStream = InputStream(data: data)
