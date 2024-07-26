@@ -36,12 +36,12 @@ open class Session {
     /// - parameter handler: The closure that receives result of the request.
     /// - returns: The new session task.
     @discardableResult
-    open class func send<Request: APIKit.Request>(_ request: Request, callbackQueue: CallbackQueue? = nil, handler: @escaping (Result<Request.Response, SessionTaskError>) -> Void = { _ in }) -> SessionTask? {
+    open class func send<Request: APIKit.Request>(_ request: Request, callbackQueue: CallbackQueue? = nil, handler: @escaping @Sendable (Result<Request.Response, SessionTaskError>) -> Void = { _ in }) -> SessionTask? {
         return shared.send(request, callbackQueue: callbackQueue, handler: handler)
     }
 
     /// Calls `cancelRequests(with:passingTest:)` of `Session.shared`.
-    open class func cancelRequests<Request: APIKit.Request>(with requestType: Request.Type, passingTest test: @escaping (Request) -> Bool = { _ in true }) {
+    open class func cancelRequests<Request: APIKit.Request>(with requestType: Request.Type, passingTest test: @escaping @Sendable (Request) -> Bool = { _ in true }) {
         shared.cancelRequests(with: requestType, passingTest: test)
     }
 
@@ -54,7 +54,7 @@ open class Session {
     /// - parameter handler: The closure that receives result of the request.
     /// - returns: The new session task.
     @discardableResult
-    open func send<Request: APIKit.Request>(_ request: Request, callbackQueue: CallbackQueue? = nil, handler: @escaping (Result<Request.Response, SessionTaskError>) -> Void = { _ in }) -> SessionTask? {
+    open func send<Request: APIKit.Request>(_ request: Request, callbackQueue: CallbackQueue? = nil, handler: @escaping @Sendable (Result<Request.Response, SessionTaskError>) -> Void = { _ in }) -> SessionTask? {
         let task = createSessionTask(request, callbackQueue: callbackQueue, handler: handler)
         task?.resume()
         return task
@@ -63,7 +63,7 @@ open class Session {
     /// Cancels requests that passes the test.
     /// - parameter requestType: The request type to cancel.
     /// - parameter test: The test closure that determines if a request should be cancelled or not.
-    open func cancelRequests<Request: APIKit.Request>(with requestType: Request.Type, passingTest test: @escaping (Request) -> Bool = { _ in true }) {
+    open func cancelRequests<Request: APIKit.Request>(with requestType: Request.Type, passingTest test: @escaping @Sendable (Request) -> Bool = { _ in true }) {
         adapter.getTasks { [weak self] tasks in
             tasks
                 .filter { task in
@@ -77,7 +77,7 @@ open class Session {
         }
     }
 
-    internal func createSessionTask<Request: APIKit.Request>(_ request: Request, callbackQueue: CallbackQueue?, handler: @escaping (Result<Request.Response, SessionTaskError>) -> Void) -> SessionTask? {
+    internal func createSessionTask<Request: APIKit.Request>(_ request: Request, callbackQueue: CallbackQueue?, handler: @escaping @Sendable (Result<Request.Response, SessionTaskError>) -> Void) -> SessionTask? {
         let callbackQueue = callbackQueue ?? self.callbackQueue
         let urlRequest: URLRequest
         do {

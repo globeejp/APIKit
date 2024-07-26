@@ -25,7 +25,7 @@ open class URLSessionAdapter: NSObject, SessionAdapter, URLSessionDelegate, URLS
     }
 
     /// Creates `URLSessionDataTask` instance using `dataTaskWithRequest(_:completionHandler:)`.
-    open func createTask(with URLRequest: URLRequest, handler: @escaping (Data?, URLResponse?, Error?) -> Void) -> SessionTask {
+    open func createTask(with URLRequest: URLRequest, handler: @escaping @Sendable (Data?, URLResponse?, Error?) -> Void) -> SessionTask {
         let task = urlSession.dataTask(with: URLRequest)
 
         setBuffer(NSMutableData(), forTask: task)
@@ -35,7 +35,7 @@ open class URLSessionAdapter: NSObject, SessionAdapter, URLSessionDelegate, URLS
     }
 
     /// Aggregates `URLSessionTask` instances in `URLSession` using `getTasksWithCompletionHandler(_:)`.
-    open func getTasks(with handler: @escaping ([SessionTask]) -> Void) {
+    open func getTasks(with handler: @escaping @Sendable ([SessionTask]) -> Void) {
         urlSession.getTasksWithCompletionHandler { dataTasks, uploadTasks, downloadTasks in
             let allTasks: [URLSessionTask] = dataTasks + uploadTasks + downloadTasks
             handler(allTasks)
