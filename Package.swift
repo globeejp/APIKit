@@ -12,8 +12,7 @@ let package = Package(
     dependencies: [],
     targets: [
         .target(
-            name: "APIKit", 
-            dependencies: [],
+            name: "APIKit", dependencies: [],
             exclude: ["BodyParameters/AbstractInputStream.m"]
         ),
          .testTarget(
@@ -21,6 +20,5 @@ let package = Package(
             dependencies: ["APIKit"],
             resources: [.process("Resources")]
         ),
-    ],
-    swiftLanguageVersions: [.v5]
+    ]
 )
